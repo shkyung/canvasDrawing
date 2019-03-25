@@ -8,7 +8,10 @@ require.config({
 });
 
 require([
-    "jquery"
-], function ($) {
+    "jquery",
+     "source/app"
+], function ($, App) {
     "use strict";
+
+    App.initialize();
 });

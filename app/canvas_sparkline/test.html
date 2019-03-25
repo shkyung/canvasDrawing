@@ -12,421 +12,442 @@
   <script data-main="js/main" src="js/libs/require-2.3.6.js"></script>
 </head>
 <body>
+<div>
+  <select id="chartType">
+    <option value="line">Line/라인</option>
+    <option value="column">Column/열</option>
+    <option value="stacked">Stacked/승패</option>
+  </select>
+  <br>
+
+  <select id="emptyOption">
+    <option value="" disabled selected>Empty Value Display Option/빈셀 표시형식</option>
+    <option value="gap">Gap/간격</option>
+    <option value="zero">Zero/0으로 처리</option>
+    <option value="span">span/선으로 데이터요소 연결</option>
+  </select>
+
+  input each cell values using "," :
+  <input type="text" name="valueStr"> <br>
+  <input type="button" value="generate SPARKLINE">
+</div>
+
+
 <canvas id="myCanvas" width="578" height="300" style="border:1px solid #d3d3d3;"></canvas>
-<script>
-    var canvas = document.getElementById("myCanvas"),
-      ctx = canvas.getContext('2d'),
-      // canvas의 margin 값
-      marginY = 5;
-
-    function _getMinMaxY(data, emptyOption) {
-        var minY = data[ 0 ].value,
-          maxY = data[ 0 ].value,
-          hasEmptyValue = false;
-
-        function __cb(obj) {
-            var value = obj.value;
-
-            if (value) {
-                if (value > maxY) {
-                    maxY = value;
-                }
-                if (value < minY) {
-                    minY = value;
-                }
-            } else {
-                hasEmptyValue = true;
-            }
-        }
-
-        data.forEach(__cb);
-
-        if (hasEmptyValue && !emptyOption && minY > 0) {
-            // 빈값이 있고 빈셀옵션값이 "0으로 처리이며"(undefined) 현재 최소값이 0보다 크다면 y축 최소값 0 설정
-            minY = 0;
-        }
-
-        return {
-            minY: minY,
-            maxY: maxY
-        };
-    }
-
-    function _getWidthInfo(canvasWidth, dataNum) {
-        // TODO: 임의의 비율을 지정해 사용하기로 함 1 : 5 = margin : bar width
-        return canvasWidth / dataNum / 7;
-    }
-
-    function _setDisplayOptColor(obj) {
-        // low - high - first - last - negative - markers 순으로 우선순위
-        var option = this.displayOption,
-          x = obj.x,
-          y = obj.y;
-
-        function __drawMarkers(color) {
-            ctx.save();
-            ctx.fillStyle = color;
-            ctx.fillRect(x - 5, y - 5, 10, 10);
-            ctx.restore();
-        };
-
-        if (x && y) {
-            if (option.low && obj.low) {
-                __drawMarkers(this.colorMap[ "colorlow" ]);
-            } else if (option.high && obj.high) {
-                __drawMarkers(this.colorMap[ "colorhigh" ]);
-            } else if (option.first && obj.first) {
-                __drawMarkers(this.colorMap[ "colorfirst" ]);
-            } else if (option.last && obj.last) {
-                __drawMarkers(this.colorMap[ "colorlast" ]);
-            } else if (option.negative && obj.negative) {
-                __drawMarkers(this.colorMap[ "colornegative" ]);
-            } else if (option.markers) {
-                __drawMarkers(this.colorMap[ "colormarkers" ]);
-            }
-        }
-    }
-
-    function BaseSparkline(attr) {
-        this.setAttribute(attr);
-    }
-
-    BaseSparkline.prototype.setAttribute = function (attr) {
-        var ret;
-
-        this.chartInfo = attr;
-        // 1. 빈셀 옵션값 확인
-        this.emptyOption = this.chartInfo.displayEmptyCellAs;
-
-        // 2. x축(가로축) 최소값, 최대값 셋팅
-        this.minX = 0;
-        this.maxX = this.chartInfo.data.length;
-
-        // 3. y축(세로축) 최소값, 최대값 셋팅
-        ret = _getMinMaxY(this.chartInfo.data, this.emptyOption);
-        this.minY = ret.minY;
-        this.maxY = ret.maxY;
-
-        // 4. 2,3을 토대로 단위(unit)를 구함.
-        this.marginX = _getWidthInfo(canvas.width, this.maxX);
-        this.barWidth = 5 * this.marginX;
-
-        this.unitX = this.barWidth + this.marginX;
-        this.unitY = (canvas.height - 2 * marginY) / (this.maxY - this.minY);
-
-        this.renderInfoMap = {
-            infoList: []
-        };
-
-        this.displayOption = this.chartInfo.displayOption;
-        this.colorMap = this.displayOption.color;
-
-        // 각각의 차트에 따라 renderInfo 생성
-        this.generateRenderInfo();
-    };
-
-    /**
-     *
-     * @param info: json object
-     * @constructor 스파크라인 - 라인
-     */
-    function LineChart(info) {
-        BaseSparkline.call(this, info);
-    };
-
-    LineChart.prototype = Object.create(BaseSparkline.prototype);
-    LineChart.prototype.constructor = LineChart;
-
-    LineChart.prototype.generateRenderInfo = function () {
-        var chartInfo = this.chartInfo,
-          data = chartInfo.data;
-
-        function _cb(obj, index) {
-            // (2n+1)*marginX + n*barWidth
-            var value = obj.value,
-              info = { value: value },
-              x, y;
-
-            if (value != null) {
-                x = (2 * index + 1) * this.marginX + index * this.barWidth + this.barWidth / 2;
-                y = (this.maxY - value) * this.unitY + marginY;
-            } else if (!this.emptyOption) {
-                // null이고 "0으로처리" 옵션
-                x = (2 * index + 1) * this.marginX + index * this.barWidth + this.barWidth / 2;
-                y = this.maxY * this.unitY + marginY;
-            }
-
-            info[ "x" ] = x;
-            info[ "y" ] = y;
-
-            // first, last 찾기
-            if (index === 0) {
-                info[ "first" ] = "1";
-            } else if (index === data.length - 1) {
-                info[ "last" ] = "1";
-            }
-
-            // high, low 찾기
-            if (value === this.minY) {
-                info[ "low" ] = "1";
-            } else if (value === this.maxY) {
-                info[ "high" ] = "1";
-            }
-
-            if (value < 0) {
-                info[ "negative" ] = "1";
-            }
-
-            this.renderInfoMap.infoList.push(info);
-        };
-        // 1. 좌표구하기
-        data.forEach(_cb.bind(this));
-
-        console.error("this.renderInfoMap.infoList : ", this.renderInfoMap.infoList);
-
-        // renderInfoMap을 바탕으로 chart를 그림
-        this.drawChart();
-    };
-
-    LineChart.prototype.drawLines = function (index) {
-        var startIndex = index,
-          infoList = this.renderInfoMap.infoList,
-          curLocation, x, y;
-
-        if (index > infoList.length - 1) {
-            return;
-        }
-
-        curLocation = infoList[ startIndex ];
-        x = curLocation.x;
-        y = curLocation.y;
-
-        if (y != null) {
-            ctx.moveTo(x, y);
-
-            for (++startIndex; startIndex < infoList.length; startIndex++) {
-                var nextData = infoList[ startIndex ];
-
-                if (nextData.y != null) {
-                    ctx.lineTo(nextData.x, nextData.y);
-                } else {
-                    this.drawLines(startIndex);
-                    break;
-                }
-            }
-        } else {
-            this.drawLines(++startIndex);
-        }
-    };
-
-    LineChart.prototype.drawMarkers = function () {
-        this.renderInfoMap.infoList.forEach(_setDisplayOptColor.bind(this));
-    };
-
-    LineChart.prototype.drawChart = function () {
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        this.drawLines(0);
-        ctx.stroke();
-
-        this.drawMarkers();
-    };
-
-    /**
-     *
-     * @param info: json object
-     * @constructor 스파크라인 - 열
-     */
-    function ColumnChart(info) {
-        BaseSparkline.call(this, info);
-    };
-
-    ColumnChart.prototype = Object.create(BaseSparkline.prototype);
-    ColumnChart.prototype.constructor = ColumnChart;
-
-    ColumnChart.prototype.generateRenderInfo = function () {
-        var chartInfo = this.chartInfo,
-          data = chartInfo.data;
-
-        function _cb(data, index) {
-            // (2n+1)*marginX + n*barWidth
-            var value = data.value,
-              x, y;
-
-            if (value != null) {
-                x = (2 * index + 1) * this.marginX + index * this.barWidth;
-                y = (this.maxY - value) * this.unitY + marginY;
-            }
-
-            this.renderInfoMap.infoList.push({ value: value, x: x, y: y });
-        }
-
-        // 1. 좌표구하기
-        data.forEach(_cb.bind(this));
-
-        // renderInfoMap을 바탕으로 chart를 그림
-        this.drawChart();
-    };
-
-    ColumnChart.prototype.drawChart = function () {
-        var baseLineY = 0;
-
-        function _drawChart(info) {
-            var option = this.displayOption,
-              x = info.x,
-              y = info.y,
-              barHeight = (info.value - baseLineY) * this.unitY || 1;
-
-            ctx.fillRect(x, y, this.barWidth, barHeight);
-
-            if (x && y) {
-                if (option.low && obj.low) {
-                    this.colorMap[ "colorlow" ];
-                } else if (option.high && obj.high) {
-                    this.colorMap[ "colorhigh" ];
-                } else if (option.first && obj.first) {
-                    this.colorMap[ "colorfirst" ];
-                } else if (option.last && obj.last) {
-                    this.colorMap[ "colorlast" ];
-                } else if (option.negative && obj.negative) {
-                    this.colorMap[ "colornegative" ];
-                } else if (option.markers) {
-                    this.colorMap[ "colormarkers" ];
-                }
-            }
-        }
-
-        ctx.save();
-        ctx.fillStyle = "#00ff00";
-
-        if (this.maxY > 0 && this.minY > 0) {
-            baseLineY = this.minY;
-        } else if (this.maxY > 0 && this.minY < 0) {
-            baseLineY = 0;
-        } else {
-            baseLineY = -this.minY;
-        }
-
-        this.renderInfoMap.infoList.forEach(_drawChart.bind(this));
-
-        ctx.restore();
-    };
-
-    /**
-     *
-     * @param info: json object
-     * @constructor 스파크라인 - 승패
-     */
-    function StackedChart(info) {
-        BaseSparkline.call(this, info);
-    };
-
-    StackedChart.prototype = Object.create(BaseSparkline.prototype);
-    StackedChart.prototype.constructor = StackedChart;
-
-    StackedChart.prototype.generateRenderInfo = function () {
-        var chartInfo = this.chartInfo,
-          data = chartInfo.data,
-          midY = canvas.height / 2;
-
-        function _cb(data, index) {
-            // (2n+1)*marginX + n*barWidth
-            var value = data.value,
-              x, y;
-
-            if (value != null) {
-                x = (2 * index + 1) * this.marginX + index * this.barWidth;
-                y = value < 0 ? midY : marginY;
-            }
-
-            this.renderInfoMap.infoList.push({ value: value, x: x, y: y });
-        }
-
-        // 1. 좌표구하기
-        data.forEach(_cb.bind(this));
-
-        // renderInfoMap을 바탕으로 chart를 그림
-        this.drawChart(midY - marginY);
-    };
-
-    StackedChart.prototype.drawChart = function (barHeight) {
-        function _drawChart(info) {
-            var isNegative = info.value < 0;
-
-            if (isNegative) {
-                ctx.save();
-                ctx.fillStyle = "#ff0000";
-            }
-
-            ctx.fillRect(info.x, info.y, this.barWidth, barHeight);
-
-            if (isNegative) {
-                ctx.restore();
-            }
-        }
-
-        ctx.save();
-        ctx.fillStyle = "#00ff00";
-
-        this.renderInfoMap.infoList.forEach(_drawChart.bind(this));
-    };
-
-    var constructorMap = {
-        line: LineChart,
-        column: ColumnChart,
-        stacked: StackedChart
-    };
-
-    var dummy1 = {
-        // "line"(wc에서 속성으로 안옴) "column" "stacked"
-        type: "line",
-        /* 3가지 빈셀 표시 형식
-        * 1) "gap" : 간격 - value값을 null or undefined 로 줄 것 (완료)
-        * 2) "속성없음" : 0으로 처리 - OOXML 상에서는 displayEmptyCellAs 속성이 없으면 "0으로 처리"에 해당.
-        * 3) "span" : 선으로 요소 연결 - type = line 만 가능
-        * */
-        displayEmptyCellAs: "gap",
-        displayOption: {
-            /* 6가지 "표시" 옵션 : "1" 값이 있을때만 속성을 갖는다.
-            * 1) low
-            * 2) high
-            * 3) first
-            * 4) last
-            * 5) negative
-            * 6) markers
-            */
-            low: "1",
-            high: "1",
-            markers: "1",
-            color: {
-                /* 6가지 "표시 컬러" 옵션 : 표시 값이 없어도 컬러값 속성은 가지고 있다.
-                * 1) colorlow
-                * 2) colorhigh
-                * 3) colorfirst
-                * 4) colorlast
-                * 5) colornegative
-                * 6) colormarkers
-                */
-                colorlow: "#00ff00",
-                colorhigh: "#ff0000",
-                colorfirst: "#FFD00000",
-                colorlast: "#FFD00000",
-                colornegative: "#FFD00000",
-                colormarkers: "#000000",
-                colorseries: "#376092"
-            }
-        },
-        /*
-      * 공통
-      * 문자열 - 0으로 처리
-      * */
-        data: [ { value: 100 }, { value: null }, { value: -300 }, { value: 400 }, { value: null } ]
-        //data: [ { value: -100 }, { value: 300 }, { value: 200 }, { value: -500 }, { value: -450 } ]
-        //data: [ { value: -200 }, { value: -300 }, { value: -250 }, { value: -500 }, { value: -450 } ]
-    };
-
-    new constructorMap[ dummy1.type ](dummy1);
-
-</script>
+<!--<script>-->
+    <!--var canvas = document.getElementById("myCanvas"),-->
+      <!--ctx = canvas.getContext('2d'),-->
+      <!--// canvas의 margin 값-->
+      <!--marginY = 5;-->
+
+    <!--function _getMinMaxY(data, emptyOption) {-->
+        <!--var minY = data[ 0 ].value,-->
+          <!--maxY = data[ 0 ].value,-->
+          <!--hasEmptyValue = false;-->
+
+        <!--function __cb(obj) {-->
+            <!--var value = obj.value;-->
+
+            <!--if (value) {-->
+                <!--if (value > maxY) {-->
+                    <!--maxY = value;-->
+                <!--}-->
+                <!--if (value < minY) {-->
+                    <!--minY = value;-->
+                <!--}-->
+            <!--} else {-->
+                <!--hasEmptyValue = true;-->
+            <!--}-->
+        <!--}-->
+
+        <!--data.forEach(__cb);-->
+
+        <!--if (hasEmptyValue && !emptyOption && minY > 0) {-->
+            <!--// 빈값이 있고 빈셀옵션값이 "0으로 처리이며"(undefined) 현재 최소값이 0보다 크다면 y축 최소값 0 설정-->
+            <!--minY = 0;-->
+        <!--}-->
+
+        <!--return {-->
+            <!--minY: minY,-->
+            <!--maxY: maxY-->
+        <!--};-->
+    <!--}-->
+
+    <!--function _getWidthInfo(canvasWidth, dataNum) {-->
+        <!--// TODO: 임의의 비율을 지정해 사용하기로 함 1 : 5 = margin : bar width-->
+        <!--return canvasWidth / dataNum / 7;-->
+    <!--}-->
+
+    <!--function _setDisplayOptColor(obj) {-->
+        <!--// low - high - first - last - negative - markers 순으로 우선순위-->
+        <!--var option = this.displayOption,-->
+          <!--x = obj.x,-->
+          <!--y = obj.y;-->
+
+        <!--function __drawMarkers(color) {-->
+            <!--ctx.save();-->
+            <!--ctx.fillStyle = color;-->
+            <!--ctx.fillRect(x - 5, y - 5, 10, 10);-->
+            <!--ctx.restore();-->
+        <!--};-->
+
+        <!--if (x && y) {-->
+            <!--if (option.low && obj.low) {-->
+                <!--__drawMarkers(this.colorMap[ "colorlow" ]);-->
+            <!--} else if (option.high && obj.high) {-->
+                <!--__drawMarkers(this.colorMap[ "colorhigh" ]);-->
+            <!--} else if (option.first && obj.first) {-->
+                <!--__drawMarkers(this.colorMap[ "colorfirst" ]);-->
+            <!--} else if (option.last && obj.last) {-->
+                <!--__drawMarkers(this.colorMap[ "colorlast" ]);-->
+            <!--} else if (option.negative && obj.negative) {-->
+                <!--__drawMarkers(this.colorMap[ "colornegative" ]);-->
+            <!--} else if (option.markers) {-->
+                <!--__drawMarkers(this.colorMap[ "colormarkers" ]);-->
+            <!--}-->
+        <!--}-->
+    <!--}-->
+
+    <!--function BaseSparkline(attr) {-->
+        <!--this.setAttribute(attr);-->
+    <!--}-->
+
+    <!--BaseSparkline.prototype.setAttribute = function (attr) {-->
+        <!--var ret;-->
+
+        <!--this.chartInfo = attr;-->
+        <!--// 1. 빈셀 옵션값 확인-->
+        <!--this.emptyOption = this.chartInfo.displayEmptyCellAs;-->
+
+        <!--// 2. x축(가로축) 최소값, 최대값 셋팅-->
+        <!--this.minX = 0;-->
+        <!--this.maxX = this.chartInfo.data.length;-->
+
+        <!--// 3. y축(세로축) 최소값, 최대값 셋팅-->
+        <!--ret = _getMinMaxY(this.chartInfo.data, this.emptyOption);-->
+        <!--this.minY = ret.minY;-->
+        <!--this.maxY = ret.maxY;-->
+
+        <!--// 4. 2,3을 토대로 단위(unit)를 구함.-->
+        <!--this.marginX = _getWidthInfo(canvas.width, this.maxX);-->
+        <!--this.barWidth = 5 * this.marginX;-->
+
+        <!--this.unitX = this.barWidth + this.marginX;-->
+        <!--this.unitY = (canvas.height - 2 * marginY) / (this.maxY - this.minY);-->
+
+        <!--this.renderInfoMap = {-->
+            <!--infoList: []-->
+        <!--};-->
+
+        <!--this.displayOption = this.chartInfo.displayOption;-->
+        <!--this.colorMap = this.displayOption.color;-->
+
+        <!--// 각각의 차트에 따라 renderInfo 생성-->
+        <!--this.generateRenderInfo();-->
+    <!--};-->
+
+    <!--/**-->
+     <!--*-->
+     <!--* @param info: json object-->
+     <!--* @constructor 스파크라인 - 라인-->
+     <!--*/-->
+    <!--function LineChart(info) {-->
+        <!--BaseSparkline.call(this, info);-->
+    <!--};-->
+
+    <!--LineChart.prototype = Object.create(BaseSparkline.prototype);-->
+    <!--LineChart.prototype.constructor = LineChart;-->
+
+    <!--LineChart.prototype.generateRenderInfo = function () {-->
+        <!--var chartInfo = this.chartInfo,-->
+          <!--data = chartInfo.data;-->
+
+        <!--function _cb(obj, index) {-->
+            <!--// (2n+1)*marginX + n*barWidth-->
+            <!--var value = obj.value,-->
+              <!--info = { value: value },-->
+              <!--x, y;-->
+
+            <!--if (value != null) {-->
+                <!--x = (2 * index + 1) * this.marginX + index * this.barWidth + this.barWidth / 2;-->
+                <!--y = (this.maxY - value) * this.unitY + marginY;-->
+            <!--} else if (!this.emptyOption) {-->
+                <!--// null이고 "0으로처리" 옵션-->
+                <!--x = (2 * index + 1) * this.marginX + index * this.barWidth + this.barWidth / 2;-->
+                <!--y = this.maxY * this.unitY + marginY;-->
+            <!--}-->
+
+            <!--info[ "x" ] = x;-->
+            <!--info[ "y" ] = y;-->
+
+            <!--// first, last 찾기-->
+            <!--if (index === 0) {-->
+                <!--info[ "first" ] = "1";-->
+            <!--} else if (index === data.length - 1) {-->
+                <!--info[ "last" ] = "1";-->
+            <!--}-->
+
+            <!--// high, low 찾기-->
+            <!--if (value === this.minY) {-->
+                <!--info[ "low" ] = "1";-->
+            <!--} else if (value === this.maxY) {-->
+                <!--info[ "high" ] = "1";-->
+            <!--}-->
+
+            <!--if (value < 0) {-->
+                <!--info[ "negative" ] = "1";-->
+            <!--}-->
+
+            <!--this.renderInfoMap.infoList.push(info);-->
+        <!--};-->
+        <!--// 1. 좌표구하기-->
+        <!--data.forEach(_cb.bind(this));-->
+
+        <!--console.error("this.renderInfoMap.infoList : ", this.renderInfoMap.infoList);-->
+
+        <!--// renderInfoMap을 바탕으로 chart를 그림-->
+        <!--this.drawChart();-->
+    <!--};-->
+
+    <!--LineChart.prototype.drawLines = function (index) {-->
+        <!--var startIndex = index,-->
+          <!--infoList = this.renderInfoMap.infoList,-->
+          <!--curLocation, x, y;-->
+
+        <!--if (index > infoList.length - 1) {-->
+            <!--return;-->
+        <!--}-->
+
+        <!--curLocation = infoList[ startIndex ];-->
+        <!--x = curLocation.x;-->
+        <!--y = curLocation.y;-->
+
+        <!--if (y != null) {-->
+            <!--ctx.moveTo(x, y);-->
+
+            <!--for (++startIndex; startIndex < infoList.length; startIndex++) {-->
+                <!--var nextData = infoList[ startIndex ];-->
+
+                <!--if (nextData.y != null) {-->
+                    <!--ctx.lineTo(nextData.x, nextData.y);-->
+                <!--} else {-->
+                    <!--this.drawLines(startIndex);-->
+                    <!--break;-->
+                <!--}-->
+            <!--}-->
+        <!--} else {-->
+            <!--this.drawLines(++startIndex);-->
+        <!--}-->
+    <!--};-->
+
+    <!--LineChart.prototype.drawMarkers = function () {-->
+        <!--this.renderInfoMap.infoList.forEach(_setDisplayOptColor.bind(this));-->
+    <!--};-->
+
+    <!--LineChart.prototype.drawChart = function () {-->
+        <!--ctx.lineWidth = 5;-->
+        <!--ctx.beginPath();-->
+        <!--this.drawLines(0);-->
+        <!--ctx.stroke();-->
+
+        <!--this.drawMarkers();-->
+    <!--};-->
+
+    <!--/**-->
+     <!--*-->
+     <!--* @param info: json object-->
+     <!--* @constructor 스파크라인 - 열-->
+     <!--*/-->
+    <!--function ColumnChart(info) {-->
+        <!--BaseSparkline.call(this, info);-->
+    <!--};-->
+
+    <!--ColumnChart.prototype = Object.create(BaseSparkline.prototype);-->
+    <!--ColumnChart.prototype.constructor = ColumnChart;-->
+
+    <!--ColumnChart.prototype.generateRenderInfo = function () {-->
+        <!--var chartInfo = this.chartInfo,-->
+          <!--data = chartInfo.data;-->
+
+        <!--function _cb(data, index) {-->
+            <!--// (2n+1)*marginX + n*barWidth-->
+            <!--var value = data.value,-->
+              <!--x, y;-->
+
+            <!--if (value != null) {-->
+                <!--x = (2 * index + 1) * this.marginX + index * this.barWidth;-->
+                <!--y = (this.maxY - value) * this.unitY + marginY;-->
+            <!--}-->
+
+            <!--this.renderInfoMap.infoList.push({ value: value, x: x, y: y });-->
+        <!--}-->
+
+        <!--// 1. 좌표구하기-->
+        <!--data.forEach(_cb.bind(this));-->
+
+        <!--// renderInfoMap을 바탕으로 chart를 그림-->
+        <!--this.drawChart();-->
+    <!--};-->
+
+    <!--ColumnChart.prototype.drawChart = function () {-->
+        <!--var baseLineY = 0;-->
+
+        <!--function _drawChart(info) {-->
+            <!--var option = this.displayOption,-->
+              <!--x = info.x,-->
+              <!--y = info.y,-->
+              <!--barHeight = (info.value - baseLineY) * this.unitY || 1;-->
+
+            <!--ctx.fillRect(x, y, this.barWidth, barHeight);-->
+
+            <!--if (x && y) {-->
+                <!--if (option.low && obj.low) {-->
+                    <!--this.colorMap[ "colorlow" ];-->
+                <!--} else if (option.high && obj.high) {-->
+                    <!--this.colorMap[ "colorhigh" ];-->
+                <!--} else if (option.first && obj.first) {-->
+                    <!--this.colorMap[ "colorfirst" ];-->
+                <!--} else if (option.last && obj.last) {-->
+                    <!--this.colorMap[ "colorlast" ];-->
+                <!--} else if (option.negative && obj.negative) {-->
+                    <!--this.colorMap[ "colornegative" ];-->
+                <!--} else if (option.markers) {-->
+                    <!--this.colorMap[ "colormarkers" ];-->
+                <!--}-->
+            <!--}-->
+        <!--}-->
+
+        <!--ctx.save();-->
+        <!--ctx.fillStyle = "#00ff00";-->
+
+        <!--if (this.maxY > 0 && this.minY > 0) {-->
+            <!--baseLineY = this.minY;-->
+        <!--} else if (this.maxY > 0 && this.minY < 0) {-->
+            <!--baseLineY = 0;-->
+        <!--} else {-->
+            <!--baseLineY = -this.minY;-->
+        <!--}-->
+
+        <!--this.renderInfoMap.infoList.forEach(_drawChart.bind(this));-->
+
+        <!--ctx.restore();-->
+    <!--};-->
+
+    <!--/**-->
+     <!--*-->
+     <!--* @param info: json object-->
+     <!--* @constructor 스파크라인 - 승패-->
+     <!--*/-->
+    <!--function StackedChart(info) {-->
+        <!--BaseSparkline.call(this, info);-->
+    <!--};-->
+
+    <!--StackedChart.prototype = Object.create(BaseSparkline.prototype);-->
+    <!--StackedChart.prototype.constructor = StackedChart;-->
+
+    <!--StackedChart.prototype.generateRenderInfo = function () {-->
+        <!--var chartInfo = this.chartInfo,-->
+          <!--data = chartInfo.data,-->
+          <!--midY = canvas.height / 2;-->
+
+        <!--function _cb(data, index) {-->
+            <!--// (2n+1)*marginX + n*barWidth-->
+            <!--var value = data.value,-->
+              <!--x, y;-->
+
+            <!--if (value != null) {-->
+                <!--x = (2 * index + 1) * this.marginX + index * this.barWidth;-->
+                <!--y = value < 0 ? midY : marginY;-->
+            <!--}-->
+
+            <!--this.renderInfoMap.infoList.push({ value: value, x: x, y: y });-->
+        <!--}-->
+
+        <!--// 1. 좌표구하기-->
+        <!--data.forEach(_cb.bind(this));-->
+
+        <!--// renderInfoMap을 바탕으로 chart를 그림-->
+        <!--this.drawChart(midY - marginY);-->
+    <!--};-->
+
+    <!--StackedChart.prototype.drawChart = function (barHeight) {-->
+        <!--function _drawChart(info) {-->
+            <!--var isNegative = info.value < 0;-->
+
+            <!--if (isNegative) {-->
+                <!--ctx.save();-->
+                <!--ctx.fillStyle = "#ff0000";-->
+            <!--}-->
+
+            <!--ctx.fillRect(info.x, info.y, this.barWidth, barHeight);-->
+
+            <!--if (isNegative) {-->
+                <!--ctx.restore();-->
+            <!--}-->
+        <!--}-->
+
+        <!--ctx.save();-->
+        <!--ctx.fillStyle = "#00ff00";-->
+
+        <!--this.renderInfoMap.infoList.forEach(_drawChart.bind(this));-->
+    <!--};-->
+
+    <!--var constructorMap = {-->
+        <!--line: LineChart,-->
+        <!--column: ColumnChart,-->
+        <!--stacked: StackedChart-->
+    <!--};-->
+
+    <!--var dummy1 = {-->
+        <!--// "line"(wc에서 속성으로 안옴) "column" "stacked"-->
+        <!--type: "line",-->
+        <!--/* 3가지 빈셀 표시 형식-->
+        <!--* 1) "gap" : 간격 - value값을 null or undefined 로 줄 것 (완료)-->
+        <!--* 2) "속성없음" : 0으로 처리 - OOXML 상에서는 displayEmptyCellAs 속성이 없으면 "0으로 처리"에 해당.-->
+        <!--* 3) "span" : 선으로 요소 연결 - type = line 만 가능-->
+        <!--* */-->
+        <!--displayEmptyCellAs: "gap",-->
+        <!--displayOption: {-->
+            <!--/* 6가지 "표시" 옵션 : "1" 값이 있을때만 속성을 갖는다.-->
+            <!--* 1) low-->
+            <!--* 2) high-->
+            <!--* 3) first-->
+            <!--* 4) last-->
+            <!--* 5) negative-->
+            <!--* 6) markers-->
+            <!--*/-->
+            <!--low: "1",-->
+            <!--high: "1",-->
+            <!--markers: "1",-->
+            <!--color: {-->
+                <!--/* 6가지 "표시 컬러" 옵션 : 표시 값이 없어도 컬러값 속성은 가지고 있다.-->
+                <!--* 1) colorlow-->
+                <!--* 2) colorhigh-->
+                <!--* 3) colorfirst-->
+                <!--* 4) colorlast-->
+                <!--* 5) colornegative-->
+                <!--* 6) colormarkers-->
+                <!--*/-->
+                <!--colorlow: "#00ff00",-->
+                <!--colorhigh: "#ff0000",-->
+                <!--colorfirst: "#FFD00000",-->
+                <!--colorlast: "#FFD00000",-->
+                <!--colornegative: "#FFD00000",-->
+                <!--colormarkers: "#000000",-->
+                <!--colorseries: "#376092"-->
+            <!--}-->
+        <!--},-->
+        <!--/*-->
+      <!--* 공통-->
+      <!--* 문자열 - 0으로 처리-->
+      <!--* */-->
+        <!--data: [ { value: 100 }, { value: null }, { value: -300 }, { value: 400 }, { value: null } ]-->
+        <!--//data: [ { value: -100 }, { value: 300 }, { value: 200 }, { value: -500 }, { value: -450 } ]-->
+        <!--//data: [ { value: -200 }, { value: -300 }, { value: -250 }, { value: -500 }, { value: -450 } ]-->
+    <!--};-->
+
+    <!--new constructorMap[ dummy1.type ](dummy1);-->
+
+<!--</script>-->
 </body>
 </html>
