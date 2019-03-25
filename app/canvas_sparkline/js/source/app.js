@@ -10,15 +10,20 @@ define(function (require) {
 
 
     //private variables
-    var $spanOption, $chartTypeSelection, $emptyOptionSelection;
+    var $spanOption, $chartTypeSelection, $emptyOptionSelection, $valueStr, $btn;
 
     return {
         initialize: function () {
             $chartTypeSelection = $("#chartType");
             $emptyOptionSelection = $("#emptyOption");
             $spanOption = $emptyOptionSelection.children("[value=span]");
+            $valueStr = $("#valueStr");
+            $btn = $("#generateChart");
+
 
             $("#chartType").on("change", this.updateSpanOption);
+
+            $btn.on("click", this.genearateChart);
         },
 
         updateSpanOption: function() {
@@ -29,6 +34,18 @@ define(function (require) {
             } else {
                 $spanOption.attr("disabled", true);
             }
+        },
+
+        genearateChart: function () {
+            var valueStr = $("#valueStr").val();
+
+            if(!$("#emptyOption").val() || !valueStr) {
+                alert("invalid info to generate chart!");
+                return;
+            }
+
+            console.error("genearateChart !!");
+
         }
     };
 });
