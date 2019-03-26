@@ -25,10 +25,19 @@
     <option value="gap">Gap/간격</option>
     <option value="zero">Zero/0으로 처리</option>
     <option value="span">span/선으로 데이터요소 연결</option>
-  </select>
+  </select> <br>
 
   input each cell values using "," :
   <input type="text" name="valueStr" id="valueStr"> <br>
+  display option :
+  <div id="displayOption">
+    <input type="checkbox" value="high"> 높은 점
+    <input type="checkbox" value="low"> 낮은 점
+    <input type="checkbox" value="first"> 첫 점
+    <input type="checkbox" value="last"> 마지막 점
+    <input type="checkbox" value="negative"> 음수 점
+    <input type="checkbox" value="markers"> 표식
+  </div>
   <input type="button" value="generate SPARKLINE" id="generateChart">
 </div>
 

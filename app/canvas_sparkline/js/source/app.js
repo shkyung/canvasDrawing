@@ -6,46 +6,57 @@ define(function (require) {
 
     // import
     var $ = require("jquery"),
-      SparkLine = require("source/sparkline");
-
+      LineChart = require("source/line"),
+      ColumnChart = require("source/column"),
+      StackedChart = require("source/stacked");
 
     //private variables
-    var $spanOption, $chartTypeSelection, $emptyOptionSelection, $valueStr, $btn;
+    var constructorMap = {
+          line: LineChart,
+          column: ColumnChart,
+          stacked: StackedChart
+      },
+      $chartTypeSelection, $emptyOptionSelection, $displayOption, $spanOption, $markerOption, $valueStr, $btn;
 
     return {
         initialize: function () {
             $chartTypeSelection = $("#chartType");
             $emptyOptionSelection = $("#emptyOption");
+            $displayOption = $("#displayOption");
             $spanOption = $emptyOptionSelection.children("[value=span]");
+            $markerOption = $displayOption.children("[value=markers]");
             $valueStr = $("#valueStr");
             $btn = $("#generateChart");
 
-
-            $("#chartType").on("change", this.updateSpanOption);
-
+            $chartTypeSelection.on("change", this.updateOptions);
             $btn.on("click", this.genearateChart);
         },
 
-        updateSpanOption: function() {
+        updateOptions: function () {
             var chartType = $chartTypeSelection.val();
 
             if (chartType === "line") {
                 $spanOption.attr("disabled", false);
+                $markerOption.attr("disabled", false);
             } else {
                 $spanOption.attr("disabled", true);
+                $markerOption.attr("disabled", false);
             }
         },
 
         genearateChart: function () {
-            var valueStr = $("#valueStr").val();
+            var chartType = $chartTypeSelection.val(),
+              valueStr = $("#valueStr").val(),
+              emptyOption = $("#emptyOption").val();
 
-            if(!$("#emptyOption").val() || !valueStr) {
+            if (!emptyOption || !valueStr) {
                 alert("invalid info to generate chart!");
                 return;
             }
 
             console.error("genearateChart !!");
 
+            new constructorMap[chartType](valueStr,emptyOption);
         }
     };
 });
