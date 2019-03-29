@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+  <meta charset="utf-8">
   <style>
     body {
       margin: 0px;
@@ -12,24 +13,25 @@
   <script data-main="js/main" src="js/libs/require-2.3.6.js"></script>
 </head>
 <body>
-<div>
+<div style="margin-left: 25px;">
+  <br>
   <select id="chartType">
     <option value="line">Line/라인</option>
     <option value="column">Column/열</option>
     <option value="stacked">Stacked/승패</option>
   </select>
-  <br>
+  <br><br>
 
   <select id="emptyOption">
     <option value="" disabled selected>Empty Value Display Option/빈셀 표시형식</option>
     <option value="gap">Gap/간격</option>
     <option value="zero">Zero/0으로 처리</option>
     <option value="span">span/선으로 데이터요소 연결</option>
-  </select> <br>
+  </select> <br><br>
 
-  input each cell values using "," :
-  <input type="text" name="valueStr" id="valueStr"> <br>
-  display option :
+  <lable>input each cell values using "," : </lable>
+  <input type="text" name="valueStr" id="valueStr"> <br><br>
+  <lable> display option : </lable>
   <div id="displayOption">
     <input type="checkbox" value="high"> 높은 점
     <input type="checkbox" value="low"> 낮은 점
@@ -38,11 +40,15 @@
     <input type="checkbox" value="negative"> 음수 점
     <input type="checkbox" value="markers"> 표식
   </div>
-  <input type="button" value="generate SPARKLINE" id="generateChart">
+
+  <input type="color" />
+  <input type="button" value="generate SPARKLINE" id="generateChart"> <br> <br>
+
+  <canvas id="myCanvas" width="578" height="300" style="border:1px solid #d3d3d3;"></canvas>
 </div>
 
 
-<canvas id="myCanvas" width="578" height="300" style="border:1px solid #d3d3d3;"></canvas>
+
 <!--<script>-->
     <!--var canvas = document.getElementById("myCanvas"),-->
       <!--ctx = canvas.getContext('2d'),-->

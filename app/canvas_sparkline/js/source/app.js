@@ -37,10 +37,10 @@ define(function (require) {
 
             if (chartType === "line") {
                 $spanOption.attr("disabled", false);
-                $markerOption.attr("disabled", false);
+                $markerOption.removeAttr("disabled");
             } else {
                 $spanOption.attr("disabled", true);
-                $markerOption.attr("disabled", false);
+                $markerOption.attr("disabled", "disabled");
             }
         },
 
