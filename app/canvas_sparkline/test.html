@@ -23,8 +23,7 @@
   <br><br>
 
   <select id="emptyOption">
-    <option value="" disabled selected>Empty Value Display Option/빈셀 표시형식</option>
-    <option value="gap">Gap/간격</option>
+    <option value="gap" selected>Gap/간격</option>
     <option value="zero">Zero/0으로 처리</option>
     <option value="span">span/선으로 데이터요소 연결</option>
   </select> <br><br>
@@ -48,12 +47,12 @@
   <div>
     <label> 표식색 </label>
     <div style ="margin-left: 25px">
-      <label> 첫 점: </label><input type="color" class="firstColor" />
-      <label> 마지막 점: </label><input type="color" class="lastColor" />
-      <label> 높은 점: </label><input type="color" class="highColor"/>
-      <label> 낮은 점: </label><input type="color" class="lowColor"/>
-      <label> 음수 점: </label><input type="color" class="negativeColor"/>
-      <label> 표식: </label><input type="color" class="markerColor"/>
+      <label> 첫 점: </label><input type="color" class="colorFirst" />
+      <label> 마지막 점: </label><input type="color" class="colorLast" />
+      <label> 높은 점: </label><input type="color" class="colorHigh"/>
+      <label> 낮은 점: </label><input type="color" class="colorLow"/>
+      <label> 음수 점: </label><input type="color" class="colorNegative"/>
+      <label> 표식: </label><input type="color" class="colorMarkers"/>
     </div>
   </div><br>
   <input type="button" value="generate SPARKLINE" id="generateChart"> <br> <br>
