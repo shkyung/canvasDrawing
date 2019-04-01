@@ -41,13 +41,25 @@
     <input type="checkbox" value="markers"> 표식
   </div>
 
-  <input type="color" />
+<div>
+  <label> 스파크라인색 </label>
+  <input type="color" class="colorSeries" />
+</div>
+  <div>
+    <label> 표식색 </label>
+    <div style ="margin-left: 25px">
+      <label> 첫 점: </label><input type="color" class="firstColor" />
+      <label> 마지막 점: </label><input type="color" class="lastColor" />
+      <label> 높은 점: </label><input type="color" class="highColor"/>
+      <label> 낮은 점: </label><input type="color" class="lowColor"/>
+      <label> 음수 점: </label><input type="color" class="negativeColor"/>
+      <label> 표식: </label><input type="color" class="markerColor"/>
+    </div>
+  </div><br>
   <input type="button" value="generate SPARKLINE" id="generateChart"> <br> <br>
 
   <canvas id="myCanvas" width="578" height="300" style="border:1px solid #d3d3d3;"></canvas>
 </div>
-
-
 
 <!--<script>-->
     <!--var canvas = document.getElementById("myCanvas"),-->
