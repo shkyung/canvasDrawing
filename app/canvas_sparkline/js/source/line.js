@@ -85,7 +85,7 @@ define(function (require) {
 
                 this.renderInfoMap.infoList.push(info);
             };
-            // 1. 좌표구하기
+            // 1. 좌표 및 컬러정보 구하기
             data.forEach(_cb.bind(this));
 
             console.error("this.renderInfoMap.infoList : ", this.renderInfoMap.infoList);
