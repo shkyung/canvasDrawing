@@ -71,27 +71,29 @@ define(function (require) {
                   y = obj.y,
                   barHeight = (obj.value - baseLineY) * this.unitY || 1;
 
-                ctx.fillRect(x, y, this.barWidth, barHeight);
+                ctx.save();
 
                 if (x && y) {
                     if (option.low && obj.low) {
-                        this.colorMap[ "colorlow" ];
+                        ctx.fillStyle = this.colorMap[ "colorlow" ];
                     } else if (option.high && obj.high) {
-                        this.colorMap[ "colorhigh" ];
+                        ctx.fillStyle = this.colorMap[ "colorhigh" ];
                     } else if (option.first && obj.first) {
-                        this.colorMap[ "colorfirst" ];
+                        ctx.fillStyle = this.colorMap[ "colorfirst" ];
                     } else if (option.last && obj.last) {
-                        this.colorMap[ "colorlast" ];
+                        ctx.fillStyle = this.colorMap[ "colorlast" ];
                     } else if (option.negative && obj.negative) {
-                        this.colorMap[ "colornegative" ];
-                    } else if (option.markers) {
-                        this.colorMap[ "colormarkers" ];
+                        ctx.fillStyle = this.colorMap[ "colornegative" ];
+                    } else if (option.markers && obj.markers) {
+                        ctx.fillStyle = this.colorMap[ "colormarkers" ];
+                    } else {
+                        ctx.fillStyle = this.colorMap[ "colorseries" ];
                     }
                 }
-            }
 
-            ctx.save();
-            ctx.fillStyle = this.colorMap[ "colorseries" ];
+                ctx.fillRect(x, y, this.barWidth, barHeight);
+            }
+            ctx.restore();
 
             if (this.maxY > 0 && this.minY > 0) {
                 baseLineY = this.minY;
@@ -102,8 +104,6 @@ define(function (require) {
             }
 
             this.renderInfoMap.infoList.forEach(_drawChart.bind(this));
-
-            ctx.restore();
         };
 
         SparkLine.call(this, info);

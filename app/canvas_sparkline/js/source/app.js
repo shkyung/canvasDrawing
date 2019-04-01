@@ -63,7 +63,7 @@ define(function (require) {
             }
 
             valueStr.split(",").forEach(function(value) {
-                data.push({value: value});
+                data.push({value: +value});
             });
 
             $("#displayOption input[type=checkbox]:checked").each(function() {
