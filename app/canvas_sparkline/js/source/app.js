@@ -29,7 +29,7 @@ define(function (require) {
             $btn = $("#generateChart");
 
             $chartTypeSelection.on("change", this.updateOptions);
-            $btn.on("click", this.genearateChart);
+            $btn.on("click", this.genearateChart.bind(this));
         },
 
         updateOptions: function () {
@@ -44,19 +44,57 @@ define(function (require) {
             }
         },
 
-        genearateChart: function () {
+        generateChartInfo: function () {
             var chartType = $chartTypeSelection.val(),
               valueStr = $("#valueStr").val(),
-              emptyOption = $("#emptyOption").val();
+              emptyOption = $("#emptyOption").val(),
+              data = [],
+              displayOptionObj = {},
+              colorInfoObj = {},
+              attr = {};
 
             if (!emptyOption || !valueStr) {
                 alert("invalid info to generate chart!");
                 return;
             }
 
+            valueStr.split(",").forEach(function(value) {
+                data.push({value: value});
+            });
+
+            $("#displayOption input[type=checkbox]:checked").each(function() {
+                var option = $(this).val();
+
+                displayOptionObj[option] = 1;
+            });
+
+            colorInfoObj["colorSeries"] = $(".colorSeries").val();
+
+            colorInfoObj["colorFirst"] = $(".colorFirst").val();
+            colorInfoObj["colorLast"] = $(".colorLast").val();
+            colorInfoObj["colorHigh"] = $(".colorHigh").val();
+            colorInfoObj["colorLow"] = $(".colorLow").val();
+            colorInfoObj["colorNegative"] = $(".colorNegative").val();
+            colorInfoObj["colorMarkers"] = $(".colorMarkers").val();
+
+            attr["type"] = chartType;
+            attr["displayEmptyCellAs"] = emptyOption;
+            attr["displayOption"] = displayOptionObj;
+            attr["displayOption"]["color"] = colorInfoObj;
+            attr["data"] = data;
+
+
             console.error("genearateChart !!");
 
-            new constructorMap[chartType](valueStr,emptyOption);
+            return attr;
+        },
+
+        genearateChart: function () {
+           var chartInfo = this.generateChartInfo();
+
+            if (chartInfo) {
+                new constructorMap[chartInfo.type](chartInfo);
+            }
         }
     };
 });
