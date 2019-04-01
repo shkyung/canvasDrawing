@@ -80,7 +80,7 @@ define(function (require) {
             this.barWidth = 5 * this.marginX;
 
             this.unitX = this.barWidth + this.marginX;
-            this.unitY = (canvas.height - 2 * marginY) / (this.maxY - this.minY);
+            this.unitY = (canvas.height - 2 * this.marginY) / (this.maxY - this.minY);
 
             this.renderInfoMap = {
                 infoList: []

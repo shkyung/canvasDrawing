@@ -7,9 +7,7 @@ define(function (require) {
     var SparkLine = require("source/sparkline");
 
     var canvas = document.getElementById("myCanvas"),
-      ctx = canvas.getContext('2d'),
-      // canvas의 margin 값
-      marginY = 5;
+      ctx = canvas.getContext('2d');
 
     function _setDisplayOptColor(obj) {
     // low - high - first - last - negative - markers 순으로 우선순위
