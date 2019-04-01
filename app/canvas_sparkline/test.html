@@ -30,29 +30,30 @@
 
   <lable>input each cell values using "," : </lable>
   <input type="text" name="valueStr" id="valueStr"> <br><br>
+
   <lable> display option : </lable>
   <div id="displayOption">
-    <input type="checkbox" value="high"> 높은 점
-    <input type="checkbox" value="low"> 낮은 점
-    <input type="checkbox" value="first"> 첫 점
-    <input type="checkbox" value="last"> 마지막 점
-    <input type="checkbox" value="negative"> 음수 점
-    <input type="checkbox" value="markers"> 표식
+    <input type="checkbox" value="high"> 높은 점/high
+    <input type="checkbox" value="low"> 낮은 점/low
+    <input type="checkbox" value="first"> 첫 점/first
+    <input type="checkbox" value="last"> 마지막 점/last
+    <input type="checkbox" value="negative"> 음수 점/negative
+    <input type="checkbox" value="markers"> 표식/markers
   </div>
 
 <div>
-  <label> 스파크라인색 </label>
+  <label> 스파크라인색/lineColor </label>
   <input type="color" class="colorSeries" />
 </div>
   <div>
-    <label> 표식색 </label>
+    <label> 표식색/markerColor </label>
     <div style ="margin-left: 25px">
-      <label> 첫 점: </label><input type="color" class="colorFirst" />
-      <label> 마지막 점: </label><input type="color" class="colorLast" />
-      <label> 높은 점: </label><input type="color" class="colorHigh"/>
-      <label> 낮은 점: </label><input type="color" class="colorLow"/>
-      <label> 음수 점: </label><input type="color" class="colorNegative"/>
-      <label> 표식: </label><input type="color" class="colorMarkers"/>
+      <label> 첫 점/first: </label><input type="color" class="colorFirst" />
+      <label> 마지막 점/last: </label><input type="color" class="colorLast" />
+      <label> 높은 점/high: </label><input type="color" class="colorHigh"/>
+      <label> 낮은 점/low: </label><input type="color" class="colorLow"/>
+      <label> 음수 점/negative: </label><input type="color" class="colorNegative"/>
+      <label> 표식/markers: </label><input type="color" class="colorMarkers"/>
     </div>
   </div><br>
   <input type="button" value="generate SPARKLINE" id="generateChart"> <br> <br>
