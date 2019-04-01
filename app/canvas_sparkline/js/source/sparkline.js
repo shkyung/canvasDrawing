@@ -106,6 +106,7 @@ define(function (require) {
 
             // 4. 2,3을 토대로 단위(unit)를 구함.
             this.marginX = _getWidthInfo(canvas.width, this.maxX);
+            this.marginY = marginY;
             this.barWidth = 5 * this.marginX;
 
             this.unitX = this.barWidth + this.marginX;

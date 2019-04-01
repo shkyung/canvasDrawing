@@ -69,7 +69,6 @@ define(function (require) {
             });
 
             colorInfoObj["colorSeries"] = $(".colorSeries").val();
-
             colorInfoObj["colorFirst"] = $(".colorFirst").val();
             colorInfoObj["colorLast"] = $(".colorLast").val();
             colorInfoObj["colorHigh"] = $(".colorHigh").val();
@@ -82,9 +81,6 @@ define(function (require) {
             attr["displayOption"] = displayOptionObj;
             attr["displayOption"]["color"] = colorInfoObj;
             attr["data"] = data;
-
-
-            console.error("genearateChart !!");
 
             return attr;
         },
