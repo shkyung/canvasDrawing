@@ -68,13 +68,13 @@ define(function (require) {
                 displayOptionObj[option] = 1;
             });
 
-            colorInfoObj["colorSeries"] = $(".colorSeries").val();
-            colorInfoObj["colorFirst"] = $(".colorFirst").val();
-            colorInfoObj["colorLast"] = $(".colorLast").val();
-            colorInfoObj["colorHigh"] = $(".colorHigh").val();
-            colorInfoObj["colorLow"] = $(".colorLow").val();
-            colorInfoObj["colorNegative"] = $(".colorNegative").val();
-            colorInfoObj["colorMarkers"] = $(".colorMarkers").val();
+            colorInfoObj["colorseries"] = $(".colorSeries").val();
+            colorInfoObj["colorfirst"] = $(".colorFirst").val();
+            colorInfoObj["colorlast"] = $(".colorLast").val();
+            colorInfoObj["colorhigh"] = $(".colorHigh").val();
+            colorInfoObj["colorlow"] = $(".colorLow").val();
+            colorInfoObj["colornegative"] = $(".colorNegative").val();
+            colorInfoObj["colormarkers"] = $(".colorMarkers").val();
 
             attr["type"] = chartType;
             attr["displayEmptyCellAs"] = emptyOption;
