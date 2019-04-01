@@ -16,7 +16,8 @@ define(function (require) {
           column: ColumnChart,
           stacked: StackedChart
       },
-      $chartTypeSelection, $emptyOptionSelection, $displayOption, $spanOption, $markerOption, $valueStr, $btn;
+      $chartTypeSelection, $emptyOptionSelection, $displayOption, $spanOption, $markerOption, $valueStr, $btn,
+      $markerColor;
 
     return {
         initialize: function () {
@@ -27,6 +28,7 @@ define(function (require) {
             $markerOption = $displayOption.children("[value=markers]");
             $valueStr = $("#valueStr");
             $btn = $("#generateChart");
+            $markerColor = $(".colorMarkers");
 
             $chartTypeSelection.on("change", this.updateOptions);
             $btn.on("click", this.genearateChart.bind(this));
@@ -38,9 +40,11 @@ define(function (require) {
             if (chartType === "line") {
                 $spanOption.attr("disabled", false);
                 $markerOption.removeAttr("disabled");
+                $markerColor.attr("disabled", false);
             } else {
                 $spanOption.attr("disabled", true);
                 $markerOption.attr("disabled", "disabled");
+                $markerColor.attr("disabled", true);
             }
         },
 
