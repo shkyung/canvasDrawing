@@ -11,11 +11,41 @@ define(function (require) {
       // canvas의 margin 값
       marginY = 5;
 
+    function _setDisplayOptColor(obj) {
+    // low - high - first - last - negative - markers 순으로 우선순위
+        var option = this.displayOption,
+          x = obj.x,
+          y = obj.y;
+
+        function __drawMarkers(color) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.fillRect(x - 5, y - 5, 10, 10);
+            ctx.restore();
+        };
+
+        if (x && y) {
+            if (option.low && obj.low) {
+                __drawMarkers(this.colorMap[ "colorlow" ]);
+            } else if (option.high && obj.high) {
+                __drawMarkers(this.colorMap[ "colorhigh" ]);
+            } else if (option.first && obj.first) {
+                __drawMarkers(this.colorMap[ "colorfirst" ]);
+            } else if (option.last && obj.last) {
+                __drawMarkers(this.colorMap[ "colorlast" ]);
+            } else if (option.negative && obj.negative) {
+                __drawMarkers(this.colorMap[ "colornegative" ]);
+            } else if (option.markers) {
+                __drawMarkers(this.colorMap[ "colormarkers" ]);
+            }
+        }
+    }
+
     /***
      * @constructor
      */
     function Line(info) {
-        this.generateRenderInfo =  function () {
+        this.generateRenderInfo = function () {
             var chartInfo = this.chartInfo,
               data = chartInfo.data;
 
@@ -66,7 +96,7 @@ define(function (require) {
             this.drawChart();
         };
 
-        this.drawLines =  function (index) {
+        this.drawLines = function (index) {
             var startIndex = index,
               infoList = this.renderInfoMap.infoList,
               curLocation, x, y;
@@ -97,13 +127,14 @@ define(function (require) {
             }
         };
 
-        this.drawMarkers =  function () {
+        this.drawMarkers = function () {
             this.renderInfoMap.infoList.forEach(_setDisplayOptColor.bind(this));
         };
 
         this.drawChart = function () {
             ctx.lineWidth = 5;
             ctx.beginPath();
+            ctx.strokeStyle = this.colorMap[ "colorseries" ];
             this.drawLines(0);
             ctx.stroke();
 
