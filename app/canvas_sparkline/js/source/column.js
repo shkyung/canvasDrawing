@@ -9,6 +9,9 @@ define(function (require) {
      ******************************************************************************/
     var SparkLine = require("source/sparkline");
 
+    /*******************************************************************************
+     * private variables
+     ******************************************************************************/
     var canvas = document.getElementById("myCanvas"),
       ctx = canvas.getContext('2d');
 
@@ -92,8 +95,8 @@ define(function (require) {
                 }
 
                 ctx.fillRect(x, y, this.barWidth, barHeight);
+                ctx.restore();
             }
-            ctx.restore();
 
             if (this.maxY > 0 && this.minY > 0) {
                 baseLineY = this.minY;
